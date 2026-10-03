@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jelajah Nusantara: Versi Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#EAF2F1;--surface:#fff;--ink:#0F3140;--muted:#4B6A75;--line:#CFDEDB;--accent:#7A1F2B;--gold:#E2A93B;--sea:#0C4A5D;
+--display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;--body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#08202A;--surface:#10303D;--ink:#E6F1EF;--muted:#9DBBC0;--line:#23495A;--accent:#F0949A;--sea:#7FC3D2}}
+:root[data-theme="dark"]{--bg:#08202A;--surface:#10303D;--ink:#E6F1EF;--muted:#9DBBC0;--line:#23495A;--accent:#F0949A;--sea:#7FC3D2}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;min-height:100%}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+header.top{display:flex;align-items:center;gap:12px;padding:10px 20px;flex-wrap:wrap}
+header.top h1{font-family:var(--display);font-weight:800;font-size:1.5rem;margin:0;flex:1;min-width:200px}
+.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:999px;padding:6px 16px;font-weight:700}
+.ghost:hover{border-color:var(--gold)}
+.game{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:18px;padding:0 20px 28px;max-width:1500px;margin:0 auto}
+@media (max-width:1000px){.game{grid-template-columns:1fr}}
+.boardwrap{background:#0B2A35;border-radius:14px;overflow:hidden;box-shadow:0 10px 28px rgba(6,30,40,.28)}
+.boardwrap svg{display:block;width:100%;height:auto}
+.pawn{transition:transform .26s ease}
+.panel{display:flex;flex-direction:column;gap:14px}
+.box{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px}
+.turn h2{font-family:var(--display);font-size:1.35rem;margin:0 0 4px;line-height:1.2}
+.turn .row{display:flex;align-items:center;gap:16px;margin:8px 0}
+.turn svg.die{width:84px;height:84px;flex:none}
+.big{width:100%;background:var(--accent);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-family:var(--display);font-weight:800;font-size:1.25rem}
+.big:hover{filter:brightness(1.08)}.big:disabled{opacity:.5;cursor:default}
+.status{min-height:3.2em;color:var(--muted);font-size:.98rem;margin:6px 0 0}
+.score{display:flex;flex-direction:column;gap:8px}
+.pl{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;border:2px solid transparent;border-radius:12px;padding:6px 10px;background:color-mix(in srgb,var(--surface) 92%,var(--sea))}
+.pl.act{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,var(--surface))}
+.pl .nm{font-weight:800;line-height:1.15}.pl .sub{font-size:.82rem;color:var(--muted)}
+.pl .tok{display:flex;align-items:center;gap:5px;font-family:var(--display);font-weight:800;font-size:1.35rem}
+.pl .tok svg{width:24px;height:24px}
+.badge{display:inline-block;font-size:.72rem;font-weight:800;border-radius:999px;padding:1px 8px;margin-left:6px;background:#7B6D9E;color:#fff}
+.badge.fin{background:#4C9A2A}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(4,20,28,.72);display:none;align-items:center;justify-content:center;padding:16px;z-index:20;overflow:auto}
+.ov.on{display:flex}
+.card{background:var(--surface);color:var(--ink);border-radius:18px;max-width:640px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);margin:auto}
+.card .hd{padding:14px 20px;color:#fff;display:flex;align-items:center;gap:12px;font-family:var(--display);font-weight:800;font-size:1.35rem}
+.card .hd .rw{margin-left:auto;display:flex;gap:4px}.card .hd .rw svg{width:26px;height:26px}
+.card .bd{padding:18px 22px 22px}
+.where{color:var(--muted);font-size:.95rem;margin:0 0 6px}
+.q{font-family:var(--display);font-weight:800;font-size:clamp(1.4rem,3.4vw,2rem);line-height:1.2;margin:4px 0 14px}
+.keeper{font-size:.95rem;color:var(--muted);margin:0 0 12px}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.btns button{flex:1;min-width:150px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--ink);padding:11px 14px;font-weight:800}
+.btns button.ok{background:#2E7D32;border-color:#2E7D32;color:#fff}.btns button.no{background:#B23A48;border-color:#B23A48;color:#fff}
+.btns button.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.ans{background:color-mix(in srgb,var(--sea) 14%,var(--surface));border-radius:12px;padding:12px 14px;margin-top:10px}
+.ans b{display:block;font-size:.85rem;color:var(--muted);text-transform:none}
+.ans .k{font-family:var(--display);font-weight:800;font-size:1.3rem}
+.mat{border-left:5px solid var(--gold);background:color-mix(in srgb,var(--gold) 14%,var(--surface));border-radius:0 12px 12px 0;padding:10px 14px;margin-top:12px;font-size:1.02rem}
+.mat b{display:block;font-size:.85rem;color:var(--muted);margin-bottom:2px}
+.res{font-family:var(--display);font-weight:800;font-size:1.5rem;margin:2px 0}
+.res.good{color:#2E7D32}.res.bad{color:#B23A48}
+@media (prefers-color-scheme:dark){.res.good{color:#7BD88F}.res.bad{color:#FF9AA5}}
+/* setup */
+.setup{max-width:720px;margin:20px auto;padding:0 20px 40px}
+.setup h2{font-family:var(--display);font-size:2.2rem;line-height:1.1;margin:8px 0}
+.setup .lead{color:var(--muted)}
+.seg{display:flex;gap:8px;margin:8px 0 16px;flex-wrap:wrap}
+.seg button{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:8px 18px;font-weight:800;min-width:56px}
+.seg button[aria-pressed="true"]{background:var(--sea);border-color:var(--sea);color:#fff}
+@media (prefers-color-scheme:dark){.seg button[aria-pressed="true"]{color:#06222D}}
+.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:8px 0 18px}
+.names label{display:flex;align-items:center;gap:8px;font-weight:700}
+.names input{flex:1;min-width:0;font:inherit;padding:8px 10px;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--ink)}
+.names svg{width:34px;height:34px;flex:none}
+.podium{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.podium .r{display:grid;grid-template-columns:40px 44px 1fr auto;gap:10px;align-items:center;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--sea) 12%,var(--surface))}
+.podium .r.first{background:color-mix(in srgb,var(--gold) 30%,var(--surface))}
+.podium .no{font-family:var(--display);font-weight:800;font-size:1.6rem;text-align:center}
+.hide{display:none!important}
+.tabs{display:flex;gap:6px;margin:0 0 12px}
+.tabs button{flex:1;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 10px;font-weight:800}
+.tabs button[aria-selected="true"]{background:var(--sea);border-color:var(--sea);color:#fff}
+@media (prefers-color-scheme:dark){.tabs button[aria-selected="true"]{color:#06222D}}
+.rc h4{font-family:var(--display);font-size:1.1rem;margin:14px 0 6px}
+.rc table{width:100%;border-collapse:collapse;font-size:.95rem}
+.rc th,.rc td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.rc th{font-size:.8rem;color:var(--muted)}
+.rc .miss{padding:8px 10px;border-radius:10px;background:color-mix(in srgb,#B23A48 10%,var(--surface));margin-bottom:6px}
+.rc .miss small{display:block;color:var(--muted)}
+.rc textarea{width:100%;min-height:120px;font:inherit;font-size:.85rem;border-radius:8px;border:2px solid var(--line);background:var(--surface);color:var(--ink);padding:8px}
+.scroll{max-height:56vh;overflow:auto;padding-right:4px}
+#resumeBox{background:color-mix(in srgb,var(--gold) 18%,var(--surface));border:2px solid var(--gold);border-radius:14px;padding:12px 16px;margin:14px 0}
+#resumeBox p{margin:0 0 8px}
+.rules li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<div id="setup" class="setup">
+  <p class="where" style="margin-top:20px">IPAS Kelas 5 &#183; Bab 6 Indonesiaku Kaya Raya</p>
+  <h2>Jelajah Nusantara: Misi Jalur Sutra</h2>
+  <p class="lead">Versi digital untuk satu layar di kelas. Tampilkan di proyektor atau TV, lalu murid bermain bergiliran dalam kelompok.</p>
+  <div id="resumeBox" class="hide"></div>
+  <h3>Jumlah kelompok</h3>
+  <div class="seg" id="segPlayers"></div>
+  <h3>Nama kapal</h3>
+  <div class="names" id="names"></div>
+  <h3>Panjang permainan</h3>
+  <div class="seg" id="segLaps"></div>
+  <p class="where" id="lapHint"></p>
+  <button class="big" id="startBtn" style="max-width:340px">Mulai berlayar</button>
+  <p class="where" style="margin-top:18px">Semua 30 kartu tantangan dan ringkasan materinya diambil dari rancangan board game Jelajah Nusantara.</p>
+</div>
+
+<div id="app" class="hide">
+<header class="top"><h1>Jelajah Nusantara</h1><button class="ghost" id="recapBtn">Rekap</button><button class="ghost" id="rulesBtn">Aturan</button><button class="ghost" id="newBtn">Permainan baru</button></header>
+<div class="game">
+  <div class="boardwrap"><svg id="board" viewBox="0 0 1200 850" role="img" aria-label="Papan permainan Jelajah Nusantara dengan pion kapal"></svg></div>
+  <div class="panel">
+    <div class="box turn" id="turnBox">
+      <h2 id="turnName"></h2>
+      <div class="row"><svg class="die" id="die" viewBox="0 0 84 84" aria-hidden="true"></svg><div><button class="big" id="actBtn">Lempar dadu</button></div></div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </div>
+    <div class="box"><div class="score" id="score"></div></div>
+  </div>
+</div>
+</div>
+
+<div class="ov" id="ov"><div class="card" id="cardBox" role="dialog" aria-modal="true" aria-labelledby="cardTitle"></div></div>
+
+<script>
+var DATA = {"PETA": [{"q": "Berada di antara benua apakah letak geografis Indonesia?", "k": "Benua Asia dan Benua Australia", "r": 1, "m": "LETAK GEOGRAFIS: lokasi suatu tempat berdasarkan keadaannya di permukaan Bumi. Indonesia berada di antara dua benua, yaitu Asia dan Australia, dan berada di sebelah tenggara Benua Asia.", "ref": "Bab 6 Topik A"}, {"q": "Indonesia diapit dua samudra. Sebutkan!", "k": "Samudra Hindia dan Samudra Pasifik", "r": 1, "m": "Indonesia terletak di antara dua samudra: Samudra Hindia (sebelah barat dan selatan) dan Samudra Pasifik (sebelah timur). Karena wilayahnya banyak berupa laut, Indonesia disebut negara maritim.", "ref": "Bab 6 Topik A"}, {"q": "Selat apa yang memisahkan Pulau Sumatra dan Pulau Jawa?", "k": "Selat Sunda", "r": 2, "m": "Selat adalah perairan sempit yang memisahkan dua daratan. Selat Sunda memisahkan Pulau Sumatra dan Pulau Jawa. Cari selat ini pada peta Indonesia di papan permainan.", "ref": "Bab 6 Topik A"}, {"q": "Selat apa yang memisahkan Pulau Kalimantan dan Pulau Sulawesi?", "k": "Selat Makassar", "r": 2, "m": "Selat Makassar memisahkan Pulau Kalimantan dan Pulau Sulawesi. Selat ini menjadi jalur pelayaran antarpulau. Cari selat ini pada peta Indonesia di papan permainan.", "ref": "Bab 6 Topik A"}, {"q": "Garis khayal yang membagi bumi menjadi belahan utara dan selatan disebut apa?", "k": "Garis khatulistiwa (ekuator)", "r": 1, "m": "Garis khatulistiwa (ekuator) adalah garis khayal pada lintang 0 derajat yang membagi Bumi menjadi belahan utara dan selatan. Garis ini melewati Indonesia, antara lain Sumatra, Kalimantan, dan Sulawesi.", "ref": "Bab 6 Topik A"}, {"q": "Sebutkan 5 pulau besar di Indonesia!", "k": "Sumatra, Jawa, Kalimantan, Sulawesi, Papua", "r": 2, "m": "Indonesia memiliki lebih dari 17.000 pulau sehingga disebut negara kepulauan. Lima pulau besarnya: Sumatra, Jawa, Kalimantan, Sulawesi, dan Papua.", "ref": "Bab 6 Topik A"}, {"q": "Di Pulau Kalimantan, Indonesia berbatasan darat dengan negara apa?", "k": "Malaysia", "r": 2, "m": "Indonesia berbatasan darat dengan Malaysia di Pulau Kalimantan, dengan Papua Nugini di Pulau Papua, dan dengan Timor Leste di Pulau Timor. Batas negara dapat dilihat pada peta.", "ref": "Bab 6 Topik A"}, {"q": "Secara astronomis, Indonesia terletak di antara lintang berapa?", "k": "Sekitar 6° LU sampai 11° LS", "r": 3, "m": "LETAK ASTRONOMIS: letak suatu tempat berdasarkan garis lintang dan garis bujur. Indonesia berada di sekitar 6 derajat LU sampai 11 derajat LS dan 95 derajat BT sampai 141 derajat BT.", "ref": "Bab 6 Topik A"}, {"q": "Sebutkan 2 komponen peta selain judul!", "k": "Skala, legenda, arah mata angin (pilih 2)", "r": 1, "m": "Informasi umum pada peta: judul peta, arah mata angin, skala, simbol, legenda, peta sisipan, dan tata warna. Judul menjelaskan jenis peta. Arah mata angin membantu menentukan arah.", "ref": "Bab 6 Topik A"}, {"q": "Apa fungsi skala pada peta?", "k": "Menunjukkan perbandingan jarak di peta dengan jarak sebenarnya", "r": 2, "m": "SKALA: perbandingan ukuran gambar pada peta dengan keadaan yang sebenarnya. Contoh skala 1:425.000 artinya 1 cm pada peta mewakili 425.000 cm atau 4,25 km pada keadaan asli.", "ref": "Bab 6 Topik A"}, {"q": "Apa fungsi legenda pada peta?", "k": "Menjelaskan arti simbol dan warna pada peta", "r": 1, "m": "LEGENDA menjelaskan keterangan simbol pada peta. Simbol adalah tanda yang mewakili keadaan sebenarnya, misalnya gunung, sungai, dan kota. Tata warna: biru untuk perairan, hijau untuk dataran rendah.", "ref": "Bab 6 Topik A"}, {"q": "Pulau Rondo adalah titik terluar Indonesia di arah mana?", "k": "Barat", "r": 2, "m": "Pulau Rondo (Aceh) adalah titik terluar Indonesia di sebelah barat. Titik terluar lain: Miangas (utara), Rote (selatan), dan Merauke (timur). Keempatnya ada di sudut papan permainan.", "ref": "Bab 6 Topik A"}, {"q": "Pulau Miangas adalah titik terluar Indonesia di arah mana?", "k": "Utara", "r": 2, "m": "Pulau Miangas (Sulawesi Utara) adalah titik terluar Indonesia di sebelah utara dan berbatasan dengan Filipina. Titik terluar lain: Rondo (barat), Rote (selatan), Merauke (timur).", "ref": "Bab 6 Topik A"}, {"q": "Pulau Rote adalah titik terluar Indonesia di arah mana?", "k": "Selatan", "r": 2, "m": "Pulau Rote (Nusa Tenggara Timur) adalah titik terluar Indonesia di sebelah selatan. Titik terluar lain: Rondo (barat), Miangas (utara), dan Merauke (timur).", "ref": "Bab 6 Topik A"}, {"q": "Merauke adalah titik terluar Indonesia di arah mana?", "k": "Timur", "r": 1, "m": "Merauke (Papua) adalah titik terluar Indonesia di sebelah timur dan berbatasan dengan Papua Nugini. Titik terluar lain: Rondo (barat), Miangas (utara), dan Rote (selatan).", "ref": "Bab 6 Topik A"}], "DAMPAK": [{"q": "Mengapa Indonesia memiliki tanah yang subur dan disebut negara agraris?", "k": "Beriklim tropis, curah hujan tinggi, banyak gunung api aktif", "r": 3, "m": "NEGARA AGRARIS: sebagian besar rakyatnya bercocok tanam. Ciri: daratan luas, ada sawah, ladang, kebun. Tanah subur karena iklim tropis, curah hujan tinggi, dan banyak gunung berapi aktif (abu vulkanik menyuburkan tanah).", "ref": "Bab 6 Topik A"}, {"q": "Apa dampak positif letak Indonesia yang berada di persilangan jalur perdagangan?", "k": "Menjadi pusat interaksi perdagangan dunia dan kaya keberagaman budaya", "r": 3, "m": "Indonesia berada di antara dua benua dan dua samudra, di persilangan jalur perdagangan dunia. Dampaknya: menjadi pusat interaksi perdagangan dunia dan kaya keberagaman budaya.", "ref": "Bab 6 Topik A"}, {"q": "Mengapa Indonesia beriklim tropis?", "k": "Letaknya dilalui garis khatulistiwa", "r": 2, "m": "Indonesia dilalui garis khatulistiwa sehingga beriklim tropis: sinar matahari banyak dan curah hujan tinggi. Iklim tropis membuat tanah dan hutan Indonesia subur dan kaya makhluk hidup.", "ref": "Bab 6 Topik A"}, {"q": "Sebutkan 2 ciri negara maritim!", "k": "Punya wilayah laut, memanfaatkan laut, transportasi laut, perdagangan laut, armada militer laut (pilih 2)", "r": 2, "m": "CIRI NEGARA MARITIM: 1) memiliki wilayah laut, 2) memanfaatkan laut untuk kesejahteraan rakyat, 3) memiliki transportasi laut, 4) memiliki perdagangan laut, 5) memiliki armada militer laut untuk menjaga kedaulatan.", "ref": "Bab 6 Topik A"}, {"q": "Apa yang membuat tanah di sekitar gunung api menjadi subur?", "k": "Abu vulkanik", "r": 2, "m": "Indonesia memiliki banyak gunung berapi yang masih aktif. Abu vulkanik gunung berapi menyuburkan tanah di sekitarnya, sehingga tanah menjadi sumber daya alam penting untuk pertanian dan perkebunan.", "ref": "Bab 6 Topik A"}, {"q": "Mengapa Indonesia disebut negara maritim?", "k": "Wilayah lautnya sangat luas", "r": 2, "m": "NEGARA MARITIM: sebagian besar wilayahnya berupa perairan. Manfaat laut: sumber ikan dan makanan laut, wisata bahari, penghubung antarpulau, sumber garam, energi alternatif, migas lepas pantai, penelitian kelautan.", "ref": "Bab 6 Topik A"}, {"q": "Mengapa Indonesia disebut negara kepulauan?", "k": "Terdiri atas ribuan pulau yang dihubungkan oleh laut", "r": 1, "m": "Negara kepulauan terdiri atas banyak pulau yang dihubungkan oleh laut. Indonesia memiliki lebih dari 17.000 pulau. Laut menjadi penghubung antarpulau untuk transportasi dan perdagangan.", "ref": "Bab 6 Topik A"}, {"q": "Mengapa hutan hujan tropis luas di Indonesia?", "k": "Curah hujan tinggi dan suhu hangat sepanjang tahun", "r": 2, "m": "Di Indonesia bagian barat curah hujan tinggi sehingga floranya beraneka ragam. Ada hutan lebat dengan meranti, keruing, rotan, dan jati. Faunanya antara lain gajah, badak, dan orang utan.", "ref": "Bab 6 Topik B"}, {"q": "Apa yang memengaruhi budaya maritim dan budaya agraris suatu daerah?", "k": "Kebiasaan masyarakat dan kondisi alam daerahnya", "r": 2, "m": "BUDAYA MARITIM dan AGRARIS dipengaruhi kebiasaan masyarakat dan kondisi alam daerahnya. Hasil budaya berupa benda (pakaian, alat kerja, rumah, alat transportasi), makanan, dan permainan tradisional.", "ref": "Bab 6 Topik A"}, {"q": "Mengapa rempah Nusantara dicari pedagang dunia?", "k": "Cocok tumbuh di iklim tropis dan letaknya strategis di jalur pelayaran", "r": 2, "m": "Flora Indonesia bagian tengah antara lain cengkeh, pala, anggrek, cendana, dan eboni. Cengkih dan pala berasal dari Kepulauan Maluku. Rempah membuat pedagang dunia datang ke Nusantara lewat jalur pelayaran.", "ref": "Bab 6 Topik B"}, {"q": "Apa mata pencaharian yang banyak dilakukan penduduk pesisir?", "k": "Nelayan", "r": 1, "m": "Laut Indonesia yang luas adalah sumber ikan dan makanan laut lainnya. Karena itu banyak penduduk pesisir bermata pencaharian sebagai nelayan, dan laut juga dipakai untuk transportasi dan perdagangan.", "ref": "Bab 6 Topik A"}, {"q": "Sebutkan 1 hasil pertanian yang cocok tumbuh di iklim tropis Indonesia!", "k": "Contoh: padi, kopi, kelapa, cengkih, pala", "r": 1, "m": "Hasil pertanian dan perkebunan Indonesia antara lain padi, jagung, kopi, kelapa, serta rempah seperti cengkih dan pala. Semuanya termasuk sumber daya alam yang dapat diperbarui.", "ref": "Bab 6 Topik C"}, {"q": "Apa dampak letak Indonesia di antara dua benua terhadap budaya?", "k": "Budaya dari luar mudah masuk sehingga budaya Indonesia beragam", "r": 3, "m": "Letak strategis di jalur perdagangan membuat pedagang dari berbagai bangsa datang ke Nusantara dan terjadi pertukaran budaya, sehingga budaya Indonesia beragam. Budaya juga dipengaruhi alam: maritim dan agraris.", "ref": "Bab 6 Topik A"}, {"q": "Apa yang dimaksud sumber daya alam yang dapat diperbarui? Beri contoh!", "k": "SDA yang dapat dibudidayakan kembali; contoh hasil pertanian, perikanan, hutan", "r": 3, "m": "SDA YANG DAPAT DIPERBARUI: kekayaan alam yang masih dapat dibudidayakan kembali bila habis, contoh hasil pertanian, perkebunan, peternakan, perikanan, hutan. SDA tidak terbarukan: hasil tambang (minyak bumi, gas alam, emas).", "ref": "Bab 6 Topik C"}, {"q": "Flora dan fauna Indonesia bagian barat mirip dengan benua apa?", "k": "Benua Asia (wilayah Asiatis)", "r": 2, "m": "Flora dan fauna Indonesia terbagi tiga wilayah: Barat (Asiatis), Tengah (peralihan), Timur (Australis). Barat mirip Asia. Timur mirip Australia, misalnya kanguru, walabi, dan cendrawasih.", "ref": "Bab 6 Topik B"}]};
+(function () {
+var C = { peta: '#2C7DA0', dampak: '#4C9A2A', bonus: '#E2A93B', muson: '#7B6D9E', corner: '#7A1F2B' };
+  var LBL = { peta: 'Kartu Peta', dampak: 'Kartu Dampak', bonus: '+1 Rempah', muson: 'Tahan 1 giliran' };
+  var TILES = [
+    ['Pulau Rondo', 'corner', ['Titik terluar', 'barat', 'Mulai di sini']],
+    ['Selat Malaka', 'peta'], ['Pulau Sumatra', 'dampak'], ['Laut Natuna', 'peta'], ['Pulau Kalimantan', 'dampak'],
+    ['Selat Makassar', 'peta'], ['Pulau Sulawesi', 'dampak'], ['Pelabuhan Ternate', 'bonus'], ['Samudra Pasifik', 'peta'],
+    ['Pulau Miangas', 'corner', ['Titik terluar', 'utara']],
+    ['Kepulauan Maluku', 'dampak'], ['Angin Muson', 'muson'], ['Pulau Papua', 'dampak'], ['Laut Banda', 'peta'], ['Laut Arafura', 'peta'],
+    ['Merauke', 'corner', ['Titik terluar', 'timur']],
+    ['Laut Timor', 'peta'], ['Pulau Timor', 'dampak'], ['Pulau Flores', 'dampak'], ['Pulau Sumbawa', 'dampak'], ['Selat Lombok', 'peta'],
+    ['Pulau Bali', 'dampak'], ['Pelabuhan Banda', 'bonus'], ['Samudra Hindia', 'peta'],
+    ['Pulau Rote', 'corner', ['Titik terluar', 'selatan']],
+    ['Selat Sunda', 'peta'], ['Pulau Jawa', 'dampak'], ['Angin Muson', 'muson'], ['Selat Karimata', 'peta'], ['Pelabuhan Sabang', 'bonus']
+  ];
+
+  function pos(i) {
+    if (i === 0) return [0, 0, 100, 100];
+    if (i <= 8) return [100 + (i - 1) * 125, 0, 125, 100];
+    if (i === 9) return [1100, 0, 100, 100];
+    if (i <= 14) return [1100, 100 + (i - 10) * 130, 100, 130];
+    if (i === 15) return [1100, 750, 100, 100];
+    if (i <= 23) return [1100 - (i - 15) * 125, 750, 125, 100];
+    if (i === 24) return [0, 750, 100, 100];
+    return [0, 750 - (i - 24) * 130, 100, 130];
+  }
+  function split(n) { var k = n.indexOf(' '); return k < 0 ? [n] : [n.slice(0, k), n.slice(k + 1)]; }
+  function T(x, y, s, size, fill, anchor, weight, extra) {
+    return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" fill="' + fill + '" text-anchor="' + (anchor || 'middle') + '" font-weight="' + (weight || 600) + '" ' + (extra || '') + '>' + s + '</text>';
+  }
+  function tile(i) {
+    var t = TILES[i], p = pos(i), x = p[0], y = p[1], w = p[2], h = p[3], cx = x + w / 2, o = '';
+    var dfont = 'font-family="Baloo 2, Trebuchet MS, sans-serif"';
+    if (t[1] === 'corner') {
+      o += '<rect x="' + x + '" y="' + y + '" width="100" height="100" fill="' + C.corner + '" stroke="#0B2A35" stroke-width="3"/>';
+      o += '<rect x="' + (x + 6) + '" y="' + (y + 6) + '" width="88" height="88" fill="none" stroke="#E2A93B" stroke-width="1.5" stroke-dasharray="4 3"/>';
+      o += T(cx, y + 34, t[0], 14, '#fff', 'middle', 800, dfont);
+      t[2].forEach(function (s, k) { o += T(cx, y + 56 + k * 15, s, 11, k === 2 ? '#FFD98A' : '#F6DCDD', 'middle', k === 2 ? 800 : 600); });
+      return o;
+    }
+    o += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="#F4FAF8" stroke="#0B2A35" stroke-width="3"/>';
+    o += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="22" fill="' + C[t[1]] + '"/>';
+    o += T(cx, y + 16, String(i), 13, t[1] === 'bonus' ? '#3B2A08' : '#fff', 'middle', 800, dfont);
+    var lines = split(t[0]);
+    var mid = y + 22 + (h - 22 - 14) / 2;
+    if (lines.length === 1) { o += T(cx, mid + 6, lines[0], 15, '#0F3140', 'middle', 800, dfont); }
+    else { o += T(cx, mid - 3, lines[0], 15, '#0F3140', 'middle', 800, dfont); o += T(cx, mid + 15, lines[1], 15, '#0F3140', 'middle', 800, dfont); }
+    o += T(cx, y + h - 9, LBL[t[1]], 10.5, C[t[1]] === C.bonus ? '#8A5F06' : C[t[1]], 'middle', 700);
+    return o;
+  }
+
+  /* ---------- island shapes ---------- */
+  function island(d) { return '<path d="' + d + '" fill="#8DB56B" stroke="#3F6B3A" stroke-width="2" stroke-linejoin="round"/>'; }
+  function label(x, y, s, size, color, extra) { return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" fill="' + color + '" font-family="Baloo 2, Trebuchet MS, sans-serif" font-weight="800" text-anchor="middle" ' + (extra || '') + '>' + s + '</text>'; }
+
+  function map() {
+    var o = '';
+    o += '<defs>' +
+      '<linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A8797"/><stop offset="1" stop-color="#124A5C"/></linearGradient>' +
+      '<pattern id="waves" width="44" height="22" patternUnits="userSpaceOnUse"><path d="M0 11 Q11 4 22 11 T44 11" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="2"/></pattern>' +
+      '<clipPath id="mapclip"><rect x="100" y="100" width="1000" height="650"/></clipPath></defs>';
+    o += '<g clip-path="url(#mapclip)">';
+    o += '<rect x="100" y="100" width="1000" height="650" fill="url(#ocean)"/><rect x="100" y="100" width="1000" height="650" fill="url(#waves)"/>';
+    /* continents */
+    o += '<path d="M100 100 L215 100 L200 138 L160 165 L100 155 Z" fill="#CDB98A" stroke="#8C7A4B" stroke-width="2"/>';
+    o += '<path d="M905 750 L925 722 L1010 716 L1100 700 L1100 750 Z" fill="#CDB98A" stroke="#8C7A4B" stroke-width="2"/>';
+    /* equator */
+    o += '<line x1="100" y1="330" x2="1100" y2="330" stroke="#F3D27A" stroke-width="2.5" stroke-dasharray="14 8"/>';
+    /* islands */
+    o += island('M128 168 L175 172 L235 235 L300 315 L350 400 L348 470 L332 535 L300 522 L250 455 L190 375 L145 285 L122 215 Z');
+    o += island('M335 560 L420 572 L510 600 L525 625 L430 625 L340 590 Z');
+    o += island('M430 290 L480 250 L560 240 L600 290 L620 330 L600 390 L540 410 L470 400 L420 360 Z');
+    o += island('M640 300 L690 285 L745 295 L715 325 L690 345 L730 350 L770 380 L735 385 L705 380 L722 440 L735 480 L700 455 L672 400 L652 355 Z');
+    o += island('M775 258 L800 250 L812 290 L795 335 L778 300 Z');
+    o += island('M780 400 L820 396 L826 425 L790 432 Z');
+    o += island('M880 340 L940 330 L1000 380 L1090 430 L1095 560 L1090 625 L1030 600 L1000 560 L950 500 L900 470 L940 430 L890 390 Z');
+    o += island('M548 636 L572 634 L574 650 L550 652 Z');
+    o += island('M578 642 L622 638 L628 656 L584 660 Z');
+    o += island('M650 668 L740 660 L748 682 L656 688 Z');
+    o += island('M745 685 L825 676 L830 704 L760 712 Z');
+    o += island('M525 645 L546 643 L545 660 L526 661 Z');
+    /* markers */
+    function dot(x, y) { return '<circle cx="' + x + '" cy="' + y + '" r="5" fill="#E2A93B" stroke="#7A1F2B" stroke-width="2"/>'; }
+    o += dot(118, 158) + dot(800, 116) + dot(1085, 651) + dot(755, 745);
+    o += label(160, 155, 'Sabang', 12.5, '#fff', 'style="paint-order:stroke" stroke="#124A5C" stroke-width="3"');
+    o += label(800, 138, 'Miangas', 12.5, '#fff', 'stroke="#124A5C" stroke-width="3" style="paint-order:stroke"');
+    o += label(1030, 673, 'Merauke', 12.5, '#fff', 'stroke="#124A5C" stroke-width="3" style="paint-order:stroke"');
+    o += label(755, 738, 'Rote', 12.5, '#fff', 'stroke="#124A5C" stroke-width="3" style="paint-order:stroke"');
+    /* names */
+    o += label(250, 330, 'Sumatra', 19, '#23431F', 'transform="rotate(48 250 330)"');
+    o += label(430, 606, 'Jawa', 17, '#23431F');
+    o += label(520, 335, 'Kalimantan', 19, '#23431F');
+    o += label(715, 415, 'Sulawesi', 16, '#23431F', 'transform="rotate(75 715 415)"');
+    o += label(990, 500, 'Papua', 22, '#23431F');
+    o += label(800, 370, 'Maluku', 14, '#E8F3EA', 'transform="rotate(-8 800 370)"');
+    o += label(690, 655, 'Nusa Tenggara', 14, '#E8F3EA');
+    o += label(150, 128, 'Benua Asia', 12, '#5A4A22');
+    o += label(1005, 738, 'Benua Australia', 13, '#5A4A22');
+    o += label(200, 505, 'Samudra Hindia', 17, '#CBE9EE', 'font-style="italic" transform="rotate(-8 200 505)"');
+    o += label(1000, 200, 'Samudra Pasifik', 20, '#CBE9EE', 'font-style="italic"');
+    o += label(1010, 322, 'Garis khatulistiwa 0°', 13, '#F3D27A', 'text-anchor="end"'.replace('text-anchor="end"', ''));
+    /* title cartouche */
+    o += '<rect x="445" y="118" width="310" height="96" rx="12" fill="#081F28" fill-opacity=".82" stroke="#E2A93B" stroke-width="2"/>';
+    o += label(600, 156, 'Jelajah Nusantara', 30, '#fff');
+    o += label(600, 178, 'Misi Jalur Sutra', 17, '#F3D27A');
+    o += '<text x="600" y="201" font-size="12" fill="#BFDCE2" text-anchor="middle" font-weight="600">Peta letak geografis Indonesia, main searah jarum jam</text>';
+    /* compass */
+    o += '<g transform="translate(160 675)"><circle r="44" fill="#081F28" fill-opacity=".55" stroke="#F3D27A" stroke-width="1.5"/>' +
+      '<path d="M0 -38 L8 0 L0 38 L-8 0 Z" fill="#F4FAF8"/><path d="M-38 0 L0 -8 L38 0 L0 8 Z" fill="#9FC7CF"/>' +
+      '<path d="M0 -38 L8 0 L-8 0 Z" fill="#E2A93B"/>' +
+      '<text y="-46" font-size="13" fill="#fff" text-anchor="middle" font-weight="800">U</text><text y="58" font-size="13" fill="#fff" text-anchor="middle" font-weight="800">S</text>' +
+      '<text x="52" y="5" font-size="13" fill="#fff" text-anchor="middle" font-weight="800">T</text><text x="-52" y="5" font-size="13" fill="#fff" text-anchor="middle" font-weight="800">B</text></g>';
+    /* legend (legenda) */
+    o += '<rect x="250" y="638" width="230" height="100" rx="10" fill="#081F28" fill-opacity=".72" stroke="#F3D27A" stroke-width="1.5"/>';
+    o += label(365, 660, 'Legenda', 15, '#F3D27A');
+    o += '<rect x="264" y="670" width="22" height="12" fill="#8DB56B" stroke="#3F6B3A"/><text x="294" y="681" font-size="12" fill="#fff" font-weight="600">Daratan</text>';
+    o += '<rect x="264" y="688" width="22" height="12" fill="#2A8797" stroke="#CBE9EE"/><text x="294" y="699" font-size="12" fill="#fff" font-weight="600">Lautan</text>';
+    o += '<line x1="264" y1="716" x2="286" y2="716" stroke="#F3D27A" stroke-width="2.5" stroke-dasharray="6 4"/><text x="294" y="720" font-size="12" fill="#fff" font-weight="600">Khatulistiwa</text>';
+    o += '<circle cx="385" cy="676" r="5" fill="#E2A93B" stroke="#7A1F2B" stroke-width="2"/><text x="396" y="681" font-size="12" fill="#fff" font-weight="600">Titik terluar</text>';
+    o += '<rect x="378" y="690" width="22" height="12" fill="#CDB98A" stroke="#8C7A4B"/><text x="408" y="701" font-size="12" fill="#fff" font-weight="600">Benua</text>';
+    /* scale bar (skala) */
+    o += '<g transform="translate(520 715)"><rect x="0" y="0" width="60" height="8" fill="#fff"/><rect x="60" y="0" width="60" height="8" fill="#081F28" stroke="#fff"/>' +
+      '<text x="0" y="-5" font-size="11" fill="#fff" font-weight="700">0</text><text x="60" y="-5" font-size="11" fill="#fff" font-weight="700" text-anchor="middle">500</text><text x="120" y="-5" font-size="11" fill="#fff" font-weight="700" text-anchor="end">1.000 km</text>' +
+      '<text x="0" y="22" font-size="11" fill="#CBE9EE" font-weight="600">Skala</text></g>';
+    o += '</g>';
+    return o;
+  }
+
+  
+var SHIP_COLORS = ['#D64545', '#2C7DA0', '#4C9A2A', '#E2A93B', '#7B6D9E'];
+var TYPE_TITLE = { peta: 'Kartu Peta', dampak: 'Kartu Dampak' };
+var CORNER_INFO = { 0: 0, 9: 1, 15: 3, 24: 2 }; /* petak sudut -> indeks kartu titik terluar */
+var CORNER_CARD = { 0: 11, 9: 12, 24: 13, 15: 14 };
+
+function $(id) { return document.getElementById(id); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function shipSvg(color, s) {
+  return '<g transform="scale(' + s + ')"><path d="M-20 8 L20 8 L13 21 L-13 21 Z" fill="' + color + '" stroke="#06222D" stroke-width="2" stroke-linejoin="round"/><rect x="-1.5" y="-26" width="3" height="34" fill="#3B2A1A"/><path d="M3 -24 L21 4 L3 4 Z" fill="#fff" stroke="#06222D" stroke-width="1.5" stroke-linejoin="round"/><path d="M-3 -16 L-16 4 L-3 4 Z" fill="#F3E9CE" stroke="#06222D" stroke-width="1.5" stroke-linejoin="round"/></g>';
+}
+function shipIcon(color) { return '<svg viewBox="-26 -30 52 56" aria-hidden="true">' + shipSvg(color, 1) + '</svg>'; }
+function cloveIcon() { return '<svg viewBox="-22 -22 44 44" aria-hidden="true"><circle r="20" fill="#7A1F2B" stroke="#E2A93B" stroke-width="3"/><path d="M0 -3 L0 13" stroke="#F1C97A" stroke-width="4" stroke-linecap="round"/><circle cx="0" cy="-8" r="3.5" fill="#F1C97A"/><circle cx="-6" cy="-9" r="2.8" fill="#F1C97A"/><circle cx="6" cy="-9" r="2.8" fill="#F1C97A"/><circle cx="0" cy="-14" r="2.8" fill="#F1C97A"/></svg>'; }
+function dieFace(n) {
+  var P = { 1: [[42, 42]], 2: [[24, 24], [60, 60]], 3: [[24, 24], [42, 42], [60, 60]], 4: [[24, 24], [60, 24], [24, 60], [60, 60]], 5: [[24, 24], [60, 24], [42, 42], [24, 60], [60, 60]], 6: [[24, 22], [60, 22], [24, 42], [60, 42], [24, 62], [60, 62]] };
+  return '<rect x="4" y="4" width="76" height="76" rx="14" fill="#F4FAF8" stroke="#06222D" stroke-width="3"/>' + P[n].map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="6.5" fill="#0F3140"/>'; }).join('');
+}
+
+/* ---------- state ---------- */
+var cfg = { n: 3, laps: 1, names: [] };
+var G = null;
+var SAVE_KEY = 'jn-save-v1';
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ ps: G.ps, t: G.t, target: G.target, decks: G.decks, log: G.log })); } catch (e) {} }
+function loadSave() { try { var v = localStorage.getItem(SAVE_KEY); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
+
+function buildSetup() {
+  var sp = $('segPlayers'); sp.innerHTML = '';
+  [2, 3, 4, 5].forEach(function (n) { var b = document.createElement('button'); b.textContent = n + ' kelompok'; b.setAttribute('aria-pressed', n === cfg.n); b.onclick = function () { cfg.n = n; buildSetup(); }; sp.appendChild(b); });
+  var nm = $('names'); nm.innerHTML = '';
+  for (var i = 0; i < cfg.n; i++) {
+    (function (i) {
+      var l = document.createElement('label'); l.innerHTML = '<svg viewBox="-26 -30 52 56" aria-hidden="true">' + shipSvg(SHIP_COLORS[i], 1) + '</svg>';
+      var inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 18; inp.placeholder = 'Kapal ' + (i + 1); inp.value = cfg.names[i] || ''; inp.setAttribute('aria-label', 'Nama kelompok ' + (i + 1));
+      inp.oninput = function () { cfg.names[i] = inp.value; };
+      l.appendChild(inp); nm.appendChild(l);
+    })(i);
+  }
+  var sl = $('segLaps'); sl.innerHTML = '';
+  [[1, '1 putaran'], [2, '2 putaran']].forEach(function (o) { var b = document.createElement('button'); b.textContent = o[1]; b.setAttribute('aria-pressed', o[0] === cfg.laps); b.onclick = function () { cfg.laps = o[0]; buildSetup(); }; sl.appendChild(b); });
+  var sv = loadSave(), rb = $('resumeBox');
+  if (sv && sv.ps && sv.ps.length) {
+    var tot = sv.ps.reduce(function (a, p) { return a + p.score; }, 0);
+    rb.classList.remove('hide');
+    rb.innerHTML = '<p><b>Ada permainan yang belum selesai</b> (' + sv.ps.length + ' kelompok, ' + (sv.log ? sv.log.length : 0) + ' kartu sudah dijawab).</p><div class="btns" style="margin:0"><button class="pri" id="bResume" style="flex:none;border-radius:10px;border:0;background:var(--accent);color:#fff;padding:9px 16px;font-weight:800">Lanjutkan</button><button id="bDrop" style="flex:none;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px;font-weight:800">Hapus simpanan</button></div>';
+    $('bResume').onclick = function () { resumeGame(sv); };
+    $('bDrop').onclick = function () { clearSave(); buildSetup(); };
+  } else { rb.classList.add('hide'); rb.innerHTML = ''; }
+  $('lapHint').textContent = cfg.laps === 1 ? 'Sekitar 30 sampai 40 menit untuk 3 sampai 4 kelompok. Permainan selesai saat semua kapal kembali ke Pulau Rondo.' : 'Lebih lama, cocok untuk dua jam pelajaran. Kapal yang sudah finis berhenti mengumpulkan rempah.';
+}
+
+function startGame() {
+  var ps = [];
+  for (var i = 0; i < cfg.n; i++) ps.push({ name: (cfg.names[i] || '').trim() || ('Kapal ' + (i + 1)), color: SHIP_COLORS[i], pos: 0, laps: 0, score: 0, skip: 0, fin: false });
+  G = { ps: ps, t: 0, target: cfg.laps, decks: { peta: shuffle(DATA.PETA), dampak: shuffle(DATA.DAMPAK) }, busy: false, act: null, log: [] };
+  $('setup').classList.add('hide'); $('app').classList.remove('hide');
+  drawBoard(); renderScore(); beginTurn();
+}
+
+function resumeGame(sv) {
+  G = { ps: sv.ps, t: sv.t, target: sv.target, decks: sv.decks, busy: false, act: null, log: sv.log || [] };
+  $('setup').classList.add('hide'); $('app').classList.remove('hide');
+  drawBoard(); renderScore(); beginTurn();
+}
+
+/* ---------- board & pawns ---------- */
+var SVGNS = 'http://www.w3.org/2000/svg';
+function drawBoard() {
+  var b = '<rect width="1200" height="850" fill="#0B2A35"/>' + map();
+  for (var i = 0; i < 30; i++) b += tile(i);
+  b += '<rect id="hl" x="0" y="0" width="100" height="100" fill="none" stroke="#FFD25A" stroke-width="6" rx="4" style="pointer-events:none"/><g id="pawns"></g>';
+  $('board').innerHTML = b;
+  var pw = $('pawns');
+  G.ps.forEach(function (p, i) {
+    var g = document.createElementNS(SVGNS, 'g'); g.setAttribute('class', 'pawn'); g.id = 'pawn' + i;
+    g.innerHTML = '<ellipse cx="0" cy="22" rx="16" ry="4" fill="#000" fill-opacity=".35"/>' + shipSvg(p.color, 0.72);
+    pw.appendChild(g);
+  });
+  placePawns();
+}
+function spot(i, j, n) {
+  /* pion berdiri di tepi dalam petak (sisi peta) supaya tidak menutupi tulisan */
+  var p = pos(i), x = p[0], y = p[1], w = p[2], h = p[3], off = (j - (n - 1) / 2), step = n > 3 ? 20 : 25;
+  if (TILES[i][1] === 'corner') {
+    var cx = (i === 0 || i === 24) ? 116 : 1084, cy = (i === 0 || i === 9) ? 118 : 730;
+    return [cx + off * step * ((i === 0 || i === 24) ? 1 : -1), cy];
+  }
+  if (i <= 8) return [x + w / 2 + off * step, 100 + 17];
+  if (i >= 16 && i <= 23) return [x + w / 2 + off * step, 750 - 13];
+  if (i >= 10 && i <= 14) return [1100 - 20, y + h / 2 + off * step];
+  return [100 + 20, y + h / 2 + off * step];
+}
+function placePawns() {
+  var groups = {};
+  G.ps.forEach(function (p, i) { (groups[p.pos] = groups[p.pos] || []).push(i); });
+  Object.keys(groups).forEach(function (k) {
+    var arr = groups[k], n = arr.length;
+    arr.forEach(function (pi, j) { var q = spot(+k, j, n); $('pawn' + pi).style.transform = 'translate(' + q[0] + 'px,' + q[1] + 'px)'; });
+  });
+  var cur = G.ps[G.t]; if (cur) { var r = pos(cur.pos); var h = $('hl'); h.setAttribute('x', r[0] + 3); h.setAttribute('y', r[1] + 3); h.setAttribute('width', r[2] - 6); h.setAttribute('height', r[3] - 6); }
+}
+
+/* ---------- panel ---------- */
+function renderScore() {
+  var h = '';
+  G.ps.forEach(function (p, i) {
+    var badge = p.fin ? '<span class="badge fin">Finis</span>' : (p.skip > 0 ? '<span class="badge">Tertahan</span>' : '');
+    h += '<div class="pl' + (i === G.t && !G.over ? ' act' : '') + '"><svg viewBox="-26 -30 52 56" width="44" height="44" aria-hidden="true">' + shipSvg(p.color, 1) + '</svg>' +
+      '<div><div class="nm">' + esc(p.name) + badge + '</div><div class="sub">Petak ' + p.pos + ' &#183; putaran ' + Math.min(p.laps + (p.fin ? 0 : 1), G.target) + ' dari ' + G.target + '</div></div>' +
+      '<div class="tok">' + cloveIcon() + '<span>' + p.score + '</span></div></div>';
+  });
+  $('score').innerHTML = h;
+}
+function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function setStatus(s) { $('status').textContent = s; }
+function setAct(label, fn, disabled) { var b = $('actBtn'); b.textContent = label; b.disabled = !!disabled; G.act = fn; }
+$('actBtn').onclick = function () { if (G && G.act && !G.busy) G.act(); };
+
+function beginTurn() {
+  if (G.ps.every(function (p) { return p.fin; })) return endGame();
+  var p = G.ps[G.t];
+  if (p.fin) { G.t = (G.t + 1) % G.ps.length; return beginTurn(); }
+  save();
+  renderScore(); placePawns();
+  $('turnName').innerHTML = 'Giliran: <span style="color:' + (p.color === '#E2A93B' ? '#B27D10' : p.color) + '">' + esc(p.name) + '</span>';
+  if (p.skip > 0) {
+    p.skip--; renderScore();
+    setStatus(p.name + ' masih tertahan angin muson. Giliran dilewati.');
+    setAct('Lanjut ke kelompok berikutnya', nextTurn);
+    return;
+  }
+  setStatus('Lempar dadu, lalu jalankan kapal searah jarum jam.');
+  setAct('Lempar dadu', roll);
+}
+function nextTurn() { G.t = (G.t + 1) % G.ps.length; beginTurn(); }
+
+function roll() {
+  G.busy = true; setAct('Mengocok...', null, true);
+  var n = 0, val = 1, iv = setInterval(function () {
+    val = 1 + Math.floor(Math.random() * 6); $('die').innerHTML = dieFace(val); n++;
+    if (n >= 9) { clearInterval(iv); afterRoll(val); }
+  }, 70);
+}
+function afterRoll(v) {
+  var p = G.ps[G.t]; setStatus(p.name + ' melempar ' + v + '.');
+  var left = v;
+  (function step() {
+    if (left === 0 || p.fin) return arrive();
+    left--; p.pos = (p.pos + 1) % 30;
+    if (p.pos === 0) { p.laps++; if (p.laps >= G.target) p.fin = true; }
+    placePawns(); renderScore();
+    setTimeout(step, 300);
+  })();
+}
+function arrive() {
+  var p = G.ps[G.t], t = TILES[p.pos];
+  if (p.fin) { setStatus(p.name + ' kembali ke Pulau Rondo dan menyelesaikan pelayaran!'); G.busy = false; setAct('Lanjut', nextTurn); return; }
+  if (t[1] === 'corner') { G.busy = false; return showCorner(p.pos); }
+  if (t[1] === 'bonus') { p.score += 1; renderScore(); setStatus(p.name + ' singgah di ' + t[0] + ' dan mendapat 1 token rempah.'); G.busy = false; setAct('Lanjut', nextTurn); return; }
+  if (t[1] === 'muson') { p.skip = 1; renderScore(); setStatus('Angin muson! ' + p.name + ' tertahan dan melewati satu giliran.'); G.busy = false; setAct('Lanjut', nextTurn); return; }
+  G.busy = false; showCard(t[1], t[0]);
+}
+
+/* ---------- modal cards ---------- */
+function drawCard(kind) {
+  var key = kind; if (!G.decks[key].length) G.decks[key] = shuffle(kind === 'peta' ? DATA.PETA : DATA.DAMPAK);
+  return G.decks[key].pop();
+}
+function coins(n) { var s = ''; for (var i = 0; i < n; i++) s += cloveIcon(); return s; }
+function openModal(html) { $('cardBox').innerHTML = html; $('ov').classList.add('on'); var f = $('cardBox').querySelector('button'); if (f) f.focus(); }
+function closeModal() { $('ov').classList.remove('on'); }
+
+function showCard(kind, where) {
+  var p = G.ps[G.t], c = drawCard(kind), col = C[kind], hinted = false, revealed = false;
+  function render(stage, ok) {
+    var h = '<div class="hd" style="background:' + col + '"><span id="cardTitle">' + TYPE_TITLE[kind] + '</span><span class="rw" aria-label="Hadiah ' + c.r + ' token">' + coins(c.r) + '</span></div><div class="bd">';
+    h += '<p class="where">' + esc(p.name) + ' berhenti di <b>' + esc(where) + '</b></p>';
+    h += '<div class="q">' + esc(c.q) + '</div>';
+    if (stage === 'ask') {
+      h += '<p class="keeper">Penjaga Peta (teman di sebelah kanan) membacakan kartu. Diskusikan jawabannya dalam kelompok.</p>';
+      if (hinted) h += '<div class="mat"><b>Petunjuk dari buku IPAS Kelas V, ' + c.ref + '</b>' + esc(c.m) + '</div>';
+      h += '<div class="btns">' + (hinted ? '' : '<button id="bHint">Butuh petunjuk</button>') + '<button class="pri" id="bShow">Tampilkan jawaban</button></div>';
+    } else if (stage === 'judge') {
+      h += '<div class="ans"><b>Kunci jawaban</b><div class="k">' + esc(c.k) + '</div></div>';
+      h += '<p class="keeper" style="margin-top:12px">Apakah jawaban kelompok benar?</p><div class="btns"><button class="ok" id="bOk">Benar, ambil ' + c.r + ' token</button><button class="no" id="bNo">Salah</button></div>';
+    } else {
+      h += '<div class="ans"><b>Kunci jawaban</b><div class="k">' + esc(c.k) + '</div></div>';
+      h += ok ? '<p class="res good">Benar! +' + c.r + ' token rempah</p>' : '<p class="res bad">Belum tepat. Kapal tertahan, lewati satu giliran.</p>';
+      h += '<div class="mat"><b>Materi di buku IPAS Kelas V, ' + c.ref + '</b>' + esc(c.m) + '</div>';
+      h += '<div class="btns"><button class="pri" id="bNext">Lanjut</button></div>';
+    }
+    openModal(h + '</div>');
+    var g = function (id) { return $(id); };
+    if (g('bHint')) g('bHint').onclick = function () { hinted = true; render('ask'); };
+    if (g('bShow')) g('bShow').onclick = function () { render('judge'); };
+    if (g('bOk')) g('bOk').onclick = function () { G.log.push({ who: p.name, q: c.q, k: c.k, ref: c.ref, kind: kind, ok: true, hint: hinted }); p.score += c.r; renderScore(); setStatus(p.name + ' menjawab benar dan mendapat ' + c.r + ' token.'); render('done', true); };
+    if (g('bNo')) g('bNo').onclick = function () { G.log.push({ who: p.name, q: c.q, k: c.k, ref: c.ref, kind: kind, ok: false, hint: hinted }); p.skip = 1; renderScore(); setStatus(p.name + ' tertahan dan melewati satu giliran.'); render('done', false); };
+    if (g('bNext')) g('bNext').onclick = function () { closeModal(); nextTurn(); };
+  }
+  render('ask');
+}
+function showCorner(i) {
+  var p = G.ps[G.t], t = TILES[i], c = DATA.PETA[CORNER_CARD[i]];
+  var h = '<div class="hd" style="background:' + C.corner + '"><span id="cardTitle">Titik terluar: ' + esc(t[0]) + '</span></div><div class="bd"><p class="where">' + esc(p.name) + ' singgah di sudut papan. Tidak ada kartu di sini.</p><div class="mat"><b>Tahukah kamu? (Buku IPAS Kelas V, ' + c.ref + ')</b>' + esc(c.m) + '</div><div class="btns"><button class="pri" id="bNext">Lanjut</button></div></div>';
+  openModal(h); $('bNext').onclick = function () { closeModal(); nextTurn(); };
+}
+
+/* ---------- recap & end ---------- */
+function recapData() {
+  var by = {}, qs = {}, refs = {};
+  G.ps.forEach(function (p) { by[p.name] = { n: 0, ok: 0, hint: 0 }; });
+  G.log.forEach(function (e) {
+    var b = by[e.who] || (by[e.who] = { n: 0, ok: 0, hint: 0 }); b.n++; if (e.ok) b.ok++; if (e.hint) b.hint++;
+    var q = qs[e.q] || (qs[e.q] = { q: e.q, k: e.k, ref: e.ref, n: 0, wrong: 0, who: [] }); q.n++; if (!e.ok) { q.wrong++; q.who.push(e.who); }
+    var r = refs[e.ref] || (refs[e.ref] = { n: 0, ok: 0 }); r.n++; if (e.ok) r.ok++;
+  });
+  return { by: by, qs: Object.keys(qs).map(function (k) { return qs[k]; }), refs: refs };
+}
+function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '-'; }
+function recapHtml() {
+  var d = recapData();
+  if (!G.log.length) return '<div class="rc"><p class="where">Belum ada kartu yang dijawab.</p></div>';
+  var h = '<div class="rc scroll"><h4>Per kelompok</h4><table><tr><th>Kelompok</th><th>Dijawab</th><th>Benar</th><th>Pakai petunjuk</th></tr>';
+  Object.keys(d.by).forEach(function (n) { var b = d.by[n]; h += '<tr><td>' + esc(n) + '</td><td>' + b.n + '</td><td>' + b.ok + ' (' + pct(b.ok, b.n) + ')</td><td>' + b.hint + '</td></tr>'; });
+  h += '</table><h4>Per bagian buku</h4><table><tr><th>Bab dan topik</th><th>Dijawab</th><th>Benar</th></tr>';
+  Object.keys(d.refs).forEach(function (r) { var x = d.refs[r]; h += '<tr><td>' + esc(r) + '</td><td>' + x.n + '</td><td>' + x.ok + ' (' + pct(x.ok, x.n) + ')</td></tr>'; });
+  h += '</table>';
+  var wrong = d.qs.filter(function (q) { return q.wrong > 0; }).sort(function (a, b) { return b.wrong - a.wrong; });
+  h += '<h4>Soal yang perlu dibahas ulang (' + wrong.length + ')</h4>';
+  if (!wrong.length) h += '<p class="where">Semua soal yang muncul dijawab benar.</p>';
+  wrong.forEach(function (q) { h += '<div class="miss"><b>' + esc(q.q) + '</b><small>Jawaban: ' + esc(q.k) + '</small><small>Salah ' + q.wrong + ' dari ' + q.n + ' kali (' + esc(q.who.join(', ')) + ') &#183; ' + esc(q.ref) + '</small></div>'; });
+  return h + '</div>';
+}
+function recapText() {
+  var d = recapData(), t = 'Rekap Jelajah Nusantara\n\nPer kelompok:\n';
+  G.ps.forEach(function (p) { var b = d.by[p.name]; t += '- ' + p.name + ': ' + p.score + ' token, ' + b.ok + ' benar dari ' + b.n + ' kartu\n'; });
+  t += '\nPer bagian buku:\n'; Object.keys(d.refs).forEach(function (r) { t += '- ' + r + ': ' + d.refs[r].ok + ' benar dari ' + d.refs[r].n + '\n'; });
+  var wrong = d.qs.filter(function (q) { return q.wrong > 0; }).sort(function (a, b) { return b.wrong - a.wrong; });
+  t += '\nSoal yang perlu dibahas ulang:\n'; if (!wrong.length) t += '- (tidak ada)\n';
+  wrong.forEach(function (q) { t += '- ' + q.q + ' (Jawaban: ' + q.k + '; salah ' + q.wrong + ' dari ' + q.n + ')\n'; });
+  return t;
+}
+function bindCopy() {
+  var b = $('bCopy'); if (!b) return;
+  b.onclick = function () {
+    var txt = recapText();
+    function manual() { b.insertAdjacentHTML('afterend', '<textarea id="cpTa" readonly aria-label="Teks rekap"></textarea>'); var ta = $('cpTa'); ta.value = txt; ta.focus(); ta.select(); b.textContent = 'Salin manual (Ctrl+C)'; }
+    try { navigator.clipboard.writeText(txt).then(function () { b.textContent = 'Tersalin'; }, manual); } catch (e) { manual(); }
+  };
+}
+function showRecap() {
+  var h = '<div class="hd" style="background:' + C.peta + '"><span id="cardTitle">Rekap untuk guru</span></div><div class="bd">' + recapHtml() + '<div class="btns"><button id="bCopy">Salin rekap</button><button class="pri" id="bClose">Tutup</button></div></div>';
+  openModal(h); $('bClose').onclick = closeModal; bindCopy();
+}
+function endGame() {
+  G.over = true; renderScore(); clearSave();
+  var r = G.ps.map(function (p, i) { return { p: p, i: i }; }).sort(function (a, b) { return b.p.score - a.p.score; });
+  var best = r[0].p.score;
+  function podium() {
+    var h = '<p class="where">Semua kapal sudah kembali ke Pulau Rondo. Ini perolehan token rempah:</p><div class="podium">', rank = 0, last = null;
+    r.forEach(function (o, k) { if (o.p.score !== last) { rank = k + 1; last = o.p.score; } h += '<div class="r' + (o.p.score === best ? ' first' : '') + '"><span class="no">' + rank + '</span><svg viewBox="-26 -30 52 56" width="40" height="40" aria-hidden="true">' + shipSvg(o.p.color, 1) + '</svg><b>' + esc(o.p.name) + '</b><span style="display:flex;align-items:center;gap:5px;font-family:var(--display);font-weight:800;font-size:1.4rem"><span style="width:24px;height:24px;display:inline-block">' + cloveIcon() + '</span>' + o.p.score + '</span></div>'; });
+    return h + '</div><p class="where">Ajak semua kelompok menyebutkan satu hal baru tentang letak geografis Indonesia yang mereka pelajari hari ini.</p>';
+  }
+  function render(tab) {
+    var h = '<div class="hd" style="background:' + C.corner + '"><span id="cardTitle">Pelayaran selesai!</span></div><div class="bd"><div class="tabs" role="tablist"><button role="tab" id="tRank" aria-selected="' + (tab === 'rank') + '">Peringkat</button><button role="tab" id="tRecap" aria-selected="' + (tab === 'recap') + '">Rekap untuk guru</button></div>';
+    h += tab === 'rank' ? podium() : recapHtml();
+    h += '<div class="btns">' + (tab === 'recap' ? '<button id="bCopy">Salin rekap</button>' : '') + '<button class="pri" id="bAgain">Main lagi</button><button id="bSet">Ubah pengaturan</button></div></div>';
+    openModal(h);
+    $('tRank').onclick = function () { render('rank'); }; $('tRecap').onclick = function () { render('recap'); };
+    $('bAgain').onclick = function () { closeModal(); startGame(); };
+    $('bSet').onclick = function () { closeModal(); $('app').classList.add('hide'); $('setup').classList.remove('hide'); buildSetup(); };
+    bindCopy();
+  }
+  setAct('Selesai', null, true); setStatus('Permainan selesai.');
+  render('rank');
+}
+
+/* ---------- rules ---------- */
+function showRules() {
+  var h = '<div class="hd" style="background:' + C.peta + '"><span id="cardTitle">Aturan main</span></div><div class="bd"><ol class="rules" style="margin:0;padding-left:1.2em"><li>Kelompok bergiliran melempar dadu dan menjalankan kapal searah jarum jam.</li><li>Berhenti di pulau, selat, atau samudra: ambil kartu sesuai warna petak (biru Kartu Peta, hijau Kartu Dampak). Teman di sebelah kanan menjadi Penjaga Peta yang membacakan kartu.</li><li>Jawaban benar: ambil token rempah sesuai hadiah kartu. Jawaban salah: kapal tertahan dan melewati satu giliran.</li><li>Pelabuhan Rempah (kuning): ambil 1 token. Angin Muson (ungu): lewati satu giliran. Titik terluar (merah): hanya info, tanpa kartu.</li><li>Tombol "Butuh petunjuk" menampilkan ringkasan materi dari buku, seperti memindai QR pada kartu fisik.</li><li>Permainan selesai saat semua kapal kembali ke Pulau Rondo sesuai jumlah putaran. Pemenang adalah kelompok dengan token rempah terbanyak.</li></ol><div class="btns"><button class="pri" id="bClose">Tutup</button></div></div>';
+  openModal(h); $('bClose').onclick = closeModal;
+}
+$('rulesBtn').onclick = showRules;
+$('recapBtn').onclick = function () { if (G) showRecap(); };
+var newTimer = null;
+$('newBtn').onclick = function () { var b = $('newBtn'); if (b.dataset.sure) { clearTimeout(newTimer); b.dataset.sure = ''; b.textContent = 'Permainan baru'; closeModal(); $('app').classList.add('hide'); $('setup').classList.remove('hide'); buildSetup(); return; } b.dataset.sure = '1'; b.textContent = 'Yakin? Klik lagi'; newTimer = setTimeout(function () { b.dataset.sure = ''; b.textContent = 'Permainan baru'; }, 3000); };
+$('ov').addEventListener('keydown', function (e) { if (e.key === 'Escape' && $('bClose')) closeModal(); });
+$('startBtn').onclick = startGame;
+$('die').innerHTML = dieFace(5);
+buildSetup();
+})();
+</script>
+</body>
+</html>
